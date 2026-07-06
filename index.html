@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpamGuard AI | Smart Spam Detection</title>
+    <meta name="description" content="SpamGuard AI uses machine learning and NLP to detect spam messages in real-time. Powered by Naive Bayes classification and TF-IDF vectorization.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-canvas">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div class="brand-pulse"></div>
+                </div>
+                <div class="brand-text">
+                    <h1>SpamGuard <span class="brand-ai">AI</span></h1>
+                    <p>Your friendly spam-catching companion ✨</p>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-chip" id="modelStatus">
+                    <div class="status-dot"></div>
+                    <span>Model Training...</span>
+                </div>
+                <div class="stat-chip">
+                    <i class="fa-solid fa-database"></i>
+                    <span id="datasetSizeLabel">Loading dataset</span>
+                </div>
+                <div class="stat-chip">
+                    <i class="fa-solid fa-percent"></i>
+                    <span id="accuracyLabel">Calculating accuracy</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel: Input & Result -->
+            <section class="panel input-panel glass-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-message"></i>
+                        <h2>Message Analysis</h2>
+                    </div>
+                    <div class="panel-badge" id="analysisBadge">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Ready to Analyze</span>
+                    </div>
+                </div>
+
+                <!-- Textarea -->
+                <div class="input-area">
+                    <div class="textarea-wrapper" id="textareaWrapper">
+                        <textarea
+                            id="messageInput"
+                            class="message-textarea"
+                            placeholder="Paste or type a message here to analyze it for spam..."
+                            maxlength="2000"
+                            spellcheck="false"
+                        ></textarea>
+                        <div class="textarea-overlay" id="highlightOverlay">
+                            <!-- Highlighted tokens will be rendered here -->
+                        </div>
+                    </div>
+                    <div class="input-meta">
+                        <span class="char-count" id="charCount">0 / 2000 characters</span>
+                        <div class="input-actions">
+                            <button class="action-btn secondary-btn" id="clearBtn" title="Clear Input">
+                                <i class="fa-solid fa-eraser"></i>
+                                <span>Clear</span>
+                            </button>
+                            <button class="action-btn secondary-btn" id="exampleBtn" title="Load Example">
+                                <i class="fa-solid fa-flask"></i>
+                                <span>Example</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analyze Button -->
+                <button class="analyze-btn" id="analyzeBtn">
+                    <div class="btn-content">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        <span>Analyze Message</span>
+                    </div>
+                    <div class="btn-ripple"></div>
+                </button>
+
+                <!-- Result Card -->
+                <div class="result-card" id="resultCard" style="display:none;">
+                    <div class="result-header">
+                        <div class="result-verdict" id="resultVerdict">
+                            <div class="verdict-icon" id="verdictIcon">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div class="verdict-text">
+                                <span class="verdict-label" id="verdictLabel">SPAM DETECTED</span>
+                                <p class="verdict-subtitle" id="verdictSubtitle">This message exhibits strong spam characteristics.</p>
+                            </div>
+                        </div>
+                        <div class="result-confidence" id="resultConfidence">
+                            <div class="confidence-ring">
+                                <svg class="ring-svg" viewBox="0 0 100 100">
+                                    <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="ring-progress" id="ringProgress" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                </svg>
+                                <div class="ring-label">
+                                    <span class="ring-percent" id="ringPercent">0%</span>
+                                    <span class="ring-text">confidence</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Probability Bars -->
+                    <div class="probability-section">
+                        <div class="prob-row">
+                            <div class="prob-label">
+                                <i class="fa-solid fa-circle-xmark spam-icon"></i>
+                                <span>Spam Probability</span>
+                            </div>
+                            <div class="prob-bar-wrap">
+                                <div class="prob-bar spam-bar" id="spamBar">
+                                    <div class="prob-fill" id="spamFill"></div>
+                                </div>
+                                <span class="prob-pct" id="spamPct">0%</span>
+                            </div>
+                        </div>
+                        <div class="prob-row">
+                            <div class="prob-label">
+                                <i class="fa-solid fa-circle-check ham-icon"></i>
+                                <span>Ham (Legit) Probability</span>
+                            </div>
+                            <div class="prob-bar-wrap">
+                                <div class="prob-bar ham-bar" id="hamBar">
+                                    <div class="prob-fill" id="hamFill"></div>
+                                </div>
+                                <span class="prob-pct" id="hamPct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Commentary -->
+                    <div class="ai-commentary" id="aiCommentary">
+                        <div class="commentary-icon">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="commentary-bubble" id="commentaryBubble">
+                            <p id="commentaryText"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: NLP Analysis -->
+            <section class="panel analysis-panel glass-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-brain"></i>
+                        <h2>NLP Analysis</h2>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <div class="empty-ping"></div>
+                    </div>
+                    <h3>Awaiting Message</h3>
+                    <p>Enter a message and click "Analyze" to see detailed NLP breakdown, token analysis, and spam signal detection.</p>
+                </div>
+
+                <!-- Analysis Content (hidden until analyzed) -->
+                <div id="analysisContent" style="display:none;">
+                    <!-- Step 1: Preprocessing -->
+                    <div class="analysis-step">
+                        <div class="step-header">
+                            <div class="step-num">1</div>
+                            <h3>Text Preprocessing</h3>
+                        </div>
+                        <div class="step-body">
+                            <div class="metric-row">
+                                <span class="metric-label">Original Length</span>
+                                <span class="metric-val mono" id="origLen">—</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Tokens Extracted</span>
+                                <span class="metric-val mono" id="tokenCount">—</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Unique Tokens</span>
+                                <span class="metric-val mono" id="uniqueTokens">—</span>
+                            </div>
+                            <div class="token-display" id="tokenDisplay">
+                                <!-- tokens shown here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Spam Signals -->
+                    <div class="analysis-step">
+                        <div class="step-header">
+                            <div class="step-num">2</div>
+                            <h3>Spam Signal Detection</h3>
+                        </div>
+                        <div class="step-body">
+                            <div class="signals-grid" id="signalsGrid">
+                                <!-- Signals rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Top Spam Keywords -->
+                    <div class="analysis-step">
+                        <div class="step-header">
+                            <div class="step-num">3</div>
+                            <h3>Key Evidence Words</h3>
+                        </div>
+                        <div class="step-body">
+                            <p class="step-desc">Words that most influenced the classification decision:</p>
+                            <div class="keywords-container" id="keywordsContainer">
+                                <!-- Keywords rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Model Info -->
+                    <div class="analysis-step">
+                        <div class="step-header">
+                            <div class="step-num">4</div>
+                            <h3>Model Classification Details</h3>
+                        </div>
+                        <div class="step-body">
+                            <div class="metric-row">
+                                <span class="metric-label">Algorithm</span>
+                                <span class="metric-val mono">Naive Bayes</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Vectorization</span>
+                                <span class="metric-val mono">TF-IDF</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Log-Odds Spam</span>
+                                <span class="metric-val mono" id="logOddsSpam">—</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Log-Odds Ham</span>
+                                <span class="metric-val mono" id="logOddsHam">—</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Decision Margin</span>
+                                <span class="metric-val mono" id="decisionMargin">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Training History / Recent Analyses -->
+        <section class="history-section glass-panel">
+            <div class="history-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <h2>Recent Analyses</h2>
+                </div>
+                <button class="action-btn secondary-btn" id="clearHistoryBtn">
+                    <i class="fa-solid fa-trash"></i>
+                    <span>Clear History</span>
+                </button>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="history-empty">
+                    <i class="fa-solid fa-inbox"></i>
+                    <span>No analyses yet. Start by analyzing a message above.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Model Performance Section -->
+        <section class="performance-section glass-panel">
+            <div class="perf-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    <h2>Model Performance</h2>
+                </div>
+            </div>
+            <div class="perf-metrics" id="perfMetrics">
+                <div class="perf-card">
+                    <div class="perf-icon"><i class="fa-solid fa-bullseye"></i></div>
+                    <div class="perf-value" id="perfAccuracy">—</div>
+                    <div class="perf-label">Accuracy</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon"><i class="fa-solid fa-crosshairs"></i></div>
+                    <div class="perf-value" id="perfPrecision">—</div>
+                    <div class="perf-label">Precision</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon"><i class="fa-solid fa-magnet"></i></div>
+                    <div class="perf-value" id="perfRecall">—</div>
+                    <div class="perf-label">Recall</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon"><i class="fa-solid fa-star"></i></div>
+                    <div class="perf-value" id="perfF1">—</div>
+                    <div class="perf-label">F1 Score</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon"><i class="fa-solid fa-database"></i></div>
+                    <div class="perf-value" id="perfTrainSize">—</div>
+                    <div class="perf-label">Training Samples</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon"><i class="fa-solid fa-vial"></i></div>
+                    <div class="perf-value" id="perfTestSize">—</div>
+                    <div class="perf-label">Test Samples</div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="app-footer">
+            <p>SpamGuard AI &mdash; Powered by Naive Bayes + TF-IDF &mdash; Runs entirely in your browser &mdash; No data sent to any server.</p>
+        </footer>
+    </div>
+
+    <script src="model.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
